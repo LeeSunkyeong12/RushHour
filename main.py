@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, Request
 from pydantic import BaseModel
 import re
 import pymysql.cursors
@@ -26,7 +26,8 @@ API handler that functions the followings;
 
 
 @app.post("/api/v1/login")
-async def usr_login(usr_login: Login):
+async def usr_login(usr_login: Login, request: Request):
+    headers = request.headers
 
     success_format = {
         "ifLogin": True,
@@ -92,21 +93,26 @@ async def usr_login(usr_login: Login):
     # final
     while True:
         try:
-            if userIdCheck(usr_login.user_id) and userPWCheck(usr_login.user_pw):
-                query = credentialCheck(usr_login.user_id, usr_login.user_pw)
+            if headers.get("Authorization") == "test":
+                if userIdCheck(usr_login.user_id) and userPWCheck(usr_login.user_pw):
+                    query = credentialCheck(usr_login.user_id, usr_login.user_pw)
 
-                if query is None:
-                    fail_format["status"] = "400"
-                    fail_format["statusMessage"] = "Unauthorized"
-                    return fail_format
+                    if query is None:
+                        fail_format["status"] = "400"
+                        fail_format["statusMessage"] = "Unauthorized"
+                        return fail_format
+
+                    else:
+                        success_format["roomCode"] = query["room_code"]
+                        return success_format
 
                 else:
-                    success_format["roomCode"] = query["room_code"]
-                    return success_format
-
+                    fail_format["status"] = "500"
+                    fail_format["statusMessage"] = "Invalid Format"
+                    return fail_format
             else:
-                fail_format["status"] = "500"
-                fail_format["statusMessage"] = "Invalid Format"
+                fail_format["status"] = "400"
+                fail_format["statusMessage"] = "Unauthorized"
                 return fail_format
         except (RuntimeError, TypeError):
             fail_format["status"] = "700"
