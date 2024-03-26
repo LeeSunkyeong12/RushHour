@@ -1,17 +1,17 @@
-http_response_true = {
+httpResponseTrue = {
     "ifLogin": True,
     "roomCode": "rand",
     "status": "200",
     "statusMessage": "Success",
 }
 
-http_response_false = {
+httpResponseFalse = {
     "ifLogin": False,
     "status": "500",
     "statusMessage": "Invalid Format",
 }
 
-error_code = {
+errorCode = {
     300: "bad request",
     400: "unauthorized",
     500: "invalid format",
@@ -25,20 +25,20 @@ class HttpCommonError:
     def __init__(self) -> None:
         pass
 
-    def httpSignInStatus(self, error_num, data=None):
+    def httpSignInStatus(self, errorNum, queryResult=None):
         """
         This is a function that checks the info in the response
         and return the corresponding results
-        :param1 int error_num: error code defined in Wiki; common error code
-        :param2 str data (optional): receive query result(room number) when succeeds,
+        :param1 int errorNum: error code defined in Wiki; common error code
+        :param2 str queryResult (optional): receive query result(room number) when succeeds,
           default as Null when fails
         :return dict: return response in json format
         """
-        if error_num == 200:
-            http_response_true["roomCode"] = data
-            return http_response_true
+        if errorNum == 200:
+            httpResponseTrue["roomCode"] = queryResult
+            return httpResponseTrue
         else:
-            http_response_false["status"] = error_num
-            http_response_false["statusMessage"] = error_code[error_num]
+            httpResponseFalse["status"] = errorNum
+            httpResponseFalse["statusMessage"] = errorCode[errorNum]
 
-            return http_response_false
+            return httpResponseFalse

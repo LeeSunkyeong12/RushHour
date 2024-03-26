@@ -8,8 +8,8 @@ app = FastAPI()
 
 
 class Login(BaseModel):
-    user_id: str
-    user_pw: str
+    userId: str
+    userPw: str
 
 
 @app.get("/")
@@ -31,9 +31,9 @@ Login API handler that functions the followings;
 
 
 @app.post("/api/v1/login")
-async def userLogin(usr_login: Login, request: Request) -> dict:
+async def userLogin(usrLogin: Login, request: Request) -> dict:
     """This is the main function that gives an proper response when requested
-    :param1 str user_login: instance for Login Class
+    :param1 str usrLogin: instance for Login Class
     :param2 str request: instance for Request Class,
     pre-built function(import from fastapi) mainly handles the request header
     :return dict: return response in json format
@@ -43,48 +43,47 @@ async def userLogin(usr_login: Login, request: Request) -> dict:
     headers = request.headers
 
     # query caller
-    login_query = sql.MySQLConnect()
-    find_id_pw_query = """SELECT room_code FROM rushhour.users
-    where user_id = "{id}" and user_pw = "{pw}"; """.format(
-        id=usr_login.user_id, pw=usr_login.user_pw
+    loginQuery = sql.MySQLConnect()
+    findIdPwQuery = """SELECT room_code FROM rushhour.users
+    where userId = "{id}" and userPw = "{pw}"; """.format(
+        id=usrLogin.userId, pw=usrLogin.userPw
     )
 
     # Common Error Check
-    check_status = httperror.HttpCommonError()
+    checkStatus = httperror.HttpCommonError()
 
     # id, pw check
-    id_check = re.findall("[a-zA-Z]", usr_login.user_id)
-    pw_check = re.findall("[a-zA-Z0-9_\W]", usr_login.user_pw)
+    idCheck = re.findall("[a-zA-Z]", usrLogin.userId)
+    pwCheck = re.findall("[a-zA-Z0-9_\W]", usrLogin.userPw)
 
     # [Function 5] handles the HTTP errors
     try:
         # [Feature 1] validate the authorization defined in request header
         if headers.get("Authorization") == "test":
-            if len(usr_login.user_id) == 0 or len(usr_login.user_pw) == 0:
-                return check_status.httpSignInStatus(500)  # no input
+            if len(usrLogin.userId) == 0 or len(usrLogin.userPw) == 0:
+                return checkStatus.httpSignInStatus(500)  # no input
             else:  # [Function 2, 3] check userID, userPw credential in regulations
                 if (
-                    len(usr_login.user_id) == len(id_check)
-                    and len(usr_login.user_id) <= 15
+                    len(usrLogin.userId) == len(idCheck) and len(usrLogin.userId) <= 15
                 ) and (
-                    len(usr_login.user_pw) == len(pw_check)
-                    and len(re.findall("[_\W]", usr_login.user_pw)) == 1
-                    and len(usr_login.user_pw) >= 8
-                    and len(usr_login.user_pw) <= 20
+                    len(usrLogin.userPw) == len(pwCheck)
+                    and len(re.findall("[_\W]", usrLogin.userPw)) == 1
+                    and len(usrLogin.userPw) >= 8
+                    and len(usrLogin.userPw) <= 20
                 ):
                     # [Function 4] checks if the given credential equates with the data in DB
-                    query = login_query.queryData(find_id_pw_query)
+                    query = loginQuery.queryData(findIdPwQuery)
                     if query is None:
-                        return check_status.httpSignInStatus(400)  # unsearchable
+                        return checkStatus.httpSignInStatus(400)  # unsearchable
 
                     else:
-                        return check_status.httpSignInStatus(
+                        return checkStatus.httpSignInStatus(
                             200, query["room_code"]
                         )  # if succeed
 
                 else:
-                    return check_status.httpSignInStatus(500)  # id, pw regulation check
+                    return checkStatus.httpSignInStatus(500)  # id, pw regulation check
         else:
-            return check_status.httpSignInStatus(400)  # handler check
+            return checkStatus.httpSignInStatus(400)  # handler check
     finally:
-        return check_status.httpSignInStatus(300)  # runtime error
+        return checkStatus.httpSignInStatus(300)  # runtime error
