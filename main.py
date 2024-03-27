@@ -32,7 +32,6 @@ Login API handler that functions the followings;
 
 @app.post("/api/v1/login")
 async def userLogin(usrLogin: Login, request: Request) -> dict:
-async def userLogin(usrLogin: Login, request: Request) -> dict:
     """This is the main function that gives an proper response when requested
     :param1 str usrLogin: instance for Login Class
     :param2 str request: instance for Request Class
