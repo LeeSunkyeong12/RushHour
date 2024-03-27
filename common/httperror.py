@@ -28,6 +28,8 @@ class HttpCommonError:
         and return the corresponding results
         :param1 int errorNum: error code defined in Wiki; common error code
         :param2 str queryResult (optional): receive query result(room number) when succeeds,
+        :param1 int errorNum: error code defined in Wiki; common error code
+        :param2 str queryResult (optional): receive query result(room number) when succeeds,
           default as Null when fails
         :return dict: return response in json format
         """
