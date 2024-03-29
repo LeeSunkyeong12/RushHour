@@ -2,14 +2,16 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import common.query as sql
 import common.httperror as httperror
-import common.setting as setting
+import re
 
 app = FastAPI()
+checkStatus = httperror.HttpCommonError()
+loginQuery = sql.MySQLConnect()
 
 
 class Login(BaseModel):
-    userId: str
-    userPw: str
+    user_id: str
+    user_pw: str
 
 
 @app.get("/")
@@ -41,17 +43,14 @@ async def userLogin(usrLogin: Login, request: Request) -> dict:
     headers = request.headers
 
     # query caller
-    loginQuery = sql.MySQLConnect()
     findIdPwQuery = """SELECT room_code FROM rushhour.users
     where user_id = "{id}" and user_pw = "{pw}"; """.format(
         id=usrLogin.user_id, pw=usrLogin.user_pw
     )
 
-    # Common Error Check
-    checkStatus = httperror.HttpCommonError()
-
     # id, pw check
-    loginCheck = setting.LoginRuleCheck()
+    idCheck = re.findall("[a-zA-Z]", usrLogin.user_id)
+    pwCheck = re.findall("[a-zA-Z0-9_\W]", usrLogin.user_pw)
 
     # [Function 5] handles the HTTP errors
     try:
@@ -59,9 +58,15 @@ async def userLogin(usrLogin: Login, request: Request) -> dict:
         if headers.get("Authorization") == "test":
             if len(usrLogin.user_id) == 0 or len(usrLogin.user_pw) == 0:
                 return checkStatus.httpSignInStatus(500)  # no input
-            else:  # [Function 2, 3] check user_id, user_pw credential in regulations
-                if loginCheck.userIdCheck(usrLogin.user_id) and loginCheck.userPWCheck(
-                    usrLogin.user_pw
+            else:  # [Function 2, 3] check userID, user_pw credential in regulations
+                if (
+                    len(usrLogin.user_id) == len(idCheck)
+                    and len(usrLogin.user_id) <= 15
+                ) and (
+                    len(usrLogin.user_pw) == len(pwCheck)
+                    and len(re.findall("[_\W]", usrLogin.user_pw)) == 1
+                    and len(usrLogin.user_pw) >= 8
+                    and len(usrLogin.user_pw) <= 20
                 ):
                     # [Function 4] checks if the given credential equates with the data in DB
                     query = loginQuery.queryData(findIdPwQuery)
