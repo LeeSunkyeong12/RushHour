@@ -1,0 +1,9 @@
+import common.query as sql
+
+sqlQuery = sql.MySQLConnect()
+
+
+def test_query():
+    assert sqlQuery.queryData(
+        'Select room_code from rushhour.users where user_id = "rushhour";'
+    ) == {"room_code": "rm01"}

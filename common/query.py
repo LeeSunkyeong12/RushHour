@@ -8,30 +8,34 @@ class MySQLConnect:
     def __init__(self) -> None:
         self.createConnection()
 
-    def queryData(self, query) -> str:
+    def queryData(self, query: str) -> str:  # query data type is requried
         """
         This method retrieves data by query
         :param1 str query: sql line
         :return str: depends on what to retrieve if succeeds, return Null if fails
         """
 
-        # check connection
         if not self.checkConnection():
             self.createConnection()
 
-        # if passed go next
         with self.connection.cursor() as cursor:
             cursor.execute(query)
             result = cursor.fetchone()
-        self.connection.commit()  # connection is not autocommit by default.
-        # So you must commit to save your changes. 데이터 crud시 transaction 생기는데 commit을 해야만 반영
+
+        self.connection.commit()
         return result
 
-    def checkConnection(self):
-        # if connection is alive return True else false
-        pass
+    def checkConnection(self) -> bool:
+        """This Method checks a MySQL connection.
+        Return True if connection is active otherwise False
+        """
+        if self.connection.ping(True):
+            return True
+        else:
+            return False
 
     def createConnection(self):
+        """This method creates a connection."""
         self.connection = pymysql.connect(
             host=setting.DB_HOST,
             user=setting.DB_USER,

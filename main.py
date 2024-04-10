@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import common.query as sql
 import common.httperror as httperror
 import re
@@ -10,10 +10,17 @@ loginQuery = sql.MySQLConnect()
 
 
 class Login(BaseModel):
-    # user_id: str = Field(min_length=1, max_length=15, pattern=r"[a-zA-Z]")
-    # user_pw: str = Field(min_length=8, max_length=20, pattern=r"[a-zA-Z0-9_\W]")
+    # user_id: str = Field(min_length=1, max_length=15, pattern=r"^[a-zA-Z]+$")
+    # user_pw: str = Field(min_length=8, max_length=20, pattern=r"^[a-zA-Z0-9_\W]+$")
     user_id: str
     user_pw: str
+
+    # @validator("user_id", pre=True)
+    # def parse_user_id(value):
+    # if isinstance(value, str):
+    #     print("here is the error")
+    #     return 1
+    # return value
 
 
 @app.get("/")
@@ -44,59 +51,47 @@ async def userLogin(usrLogin: Login, request: Request) -> dict:
     """
     headers = request.headers
 
-    # query caller
     findIdPwQuery = """SELECT room_code FROM rushhour.users
     where user_id = "{id}" and user_pw = "{pw}"; """.format(
         id=usrLogin.user_id, pw=usrLogin.user_pw
     )
 
-    # id, pw check
-    idCheck = re.findall("[a-zA-Z]", usrLogin.user_id)
-    pwCheck = re.findall("[a-zA-Z0-9_\W]", usrLogin.user_pw)
+    idCheck = re.findall(r"[a-zA-Z]", usrLogin.user_id)
+    pwCheck = re.findall(r"[a-zA-Z0-9_\W]", usrLogin.user_pw)
 
-    # [Function 5] handles the HTTP errors
     try:
-        # [Feature 1] validate the authorization defined in request header
+        # [Feature 1] validate request header
         if not headers.get("Authorization") == "test":
             return checkStatus.httpSignInStatus(400)
 
-        # if null
-        if len(usrLogin.user_id) == 0 or len(usrLogin.user_pw) == 0:
-            return checkStatus.httpSignInStatus(500)  # no input
+        # try:
+        #     Login(user_id="x")
+        # except ValidationError as exc:
+        #     print(repr(exc.errors()[0]["type"]))
 
-        # [Function 2, 3] check userID, user_pw credential in regulations
+        # [Function 2, 3] check data with rules
         if not (
-            (len(usrLogin.user_id) == len(idCheck) and len(usrLogin.user_id) <= 15)
+            (
+                len(usrLogin.user_id) == len(idCheck)
+                and len(usrLogin.user_id) >= 1
+                and len(usrLogin.user_id) <= 15
+            )
             and (
                 len(usrLogin.user_pw) == len(pwCheck)
-                and len(re.findall("[_\W]", usrLogin.user_pw)) == 1
+                and len(re.findall(r"[_\W]", usrLogin.user_pw)) == 1
                 and len(usrLogin.user_pw) >= 8
                 and len(usrLogin.user_pw) <= 20
             )
         ):
             return checkStatus.httpSignInStatus(500)
 
-        # [Function 4] checks if the given credential equates with the data in DB
+        # [Function 4] checks data with DB
         query = loginQuery.queryData(findIdPwQuery)
         if query is None:
-            return checkStatus.httpSignInStatus(400)  # unsearchable
+            return checkStatus.httpSignInStatus(400)
 
         # final return
         return checkStatus.httpSignInStatus(200, query["room_code"])
 
     except Exception:
         return checkStatus.httpSignInStatus(300)  # runtime error
-
-
-## check if regex is appliable into pydantic field
-## create test API to test out the case above
-
-# if __name__ == "__main__":
-
-#     class Login(BaseModel):
-#         user_id: str
-#         user_pw: str
-
-#     @app.post("/api/v1/login_test")
-#     async def userLogin_(usrLogin: Login) -> dict:
-#         userLogin.
