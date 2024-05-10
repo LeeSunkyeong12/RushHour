@@ -11,15 +11,31 @@
   
   <script>
   import { ref } from 'vue';
+  import axios from 'axios';
   
   export default {
     name: 'Login-app',
     setup() {
       const user = ref({ id: '', password: '' });
   
-      const login = () => {
+      const login = async () => {
         // Handle the login logic here, such as an API call
-        alert('Login attempted for ID: ' + user.value.id);
+        const data = {
+          user_id: user.value.id,
+          user_pw: user.value.password
+        };
+
+        try {
+          const response = await axios.post('http://27.96.130.196:8080/api/v1/login', data);
+          if (response.data.iflogin) {
+            console.log('login success:', response.data);
+          } else {
+            console.log('login fail:', response.data);
+            alert("Please check id or password.")
+          }
+        } catch (error) {
+            console.error('login error:', error);
+        }
       };
   
       return { user, login };
