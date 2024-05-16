@@ -41,7 +41,7 @@ Login API handler that functions the followings;
 """
 
 
-@app.get("/api/v1/login")
+@app.post("/api/v1/login")
 async def userLogin(usrLogin: Login, request: Request) -> dict:
     """This is the main function that checks the Login credential.
     Return a roomcode when a given credential matches with a regulation,
