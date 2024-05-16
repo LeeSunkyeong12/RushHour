@@ -23,7 +23,7 @@ class Login(BaseModel):
     # return value
 
 
-@app.get("/")
+@app.post("/")
 async def root():
     return {"message": "Hello World"}
 
@@ -41,9 +41,11 @@ Login API handler that functions the followings;
 """
 
 
-@app.post("/api/v1/login")
+@app.get("/api/v1/login")
 async def userLogin(usrLogin: Login, request: Request) -> dict:
-    """This is the main function that gives an proper response when requested
+    """This is the main function that checks the Login credential.
+    Return a roomcode when a given credential matches with a regulation,
+    otherwise return error code
     :param1 str usrLogin: instance for Login Class
     :param2 str request: instance for Request Class
     pre-built function(import from fastapi) mainly handles the request header

@@ -1,5 +1,10 @@
 import common.query as sql
 
+# import sys
+# import os
+
+# sys.path.append(os.getcwd())
+
 sqlQuery = sql.MySQLConnect()
 
 

@@ -24,8 +24,8 @@ class HttpCommonError:
 
     def httpSignInStatus(self, errorNum: int, queryResult=None):
         """
-        This is a function that checks the info in the response
-        and return the corresponding results
+        This is a function that checks a response
+        and return the corresponding results depends on outcomes
         :param1 int errorNum: error code defined in Wiki; common error code
         :param2 str queryResult (optional): receive query result(room number) when succeeds,
           default as Null when fails

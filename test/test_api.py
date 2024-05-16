@@ -2,6 +2,9 @@ import re
 
 """ID rule check"""
 
+## use compile for regex
+## compile : make an instance before comparing the regex
+
 
 def id_check(user_id: str) -> bool:
     """A function that validate ID complexity"""
